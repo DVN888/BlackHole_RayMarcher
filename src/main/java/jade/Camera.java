@@ -1,7 +1,5 @@
 package jade;
 
-import java.util.Vector;
-
 import static org.joml.Math.sqrt;
 
 public class Camera {
@@ -9,31 +7,18 @@ public class Camera {
     private float[] forward = new float[3];     // normalized
     private float[] up = new float[3];
     private float[] right = new float[3];
-    private float focalLength; //   distance from camera to projecting surface
-    //private float vignetteStrength = 0.0f;
+    private float focalLength; //   distance from camera to projecting surface, not implemented yet
 
     //init
     public Camera() {
         this.pos[0] = 10.0f;             //                           +y
-        this.pos[1] = -2.0f;            //                            |
-        this.pos[2] = -10.0f;             //                         +z/ \+x
+        this.pos[1] = -2.0f;             //                            |
+        this.pos[2] = -10.0f;            //                         +z/ \+x
 
         updateVectors();
 
         this.focalLength = 0.5f;
     }
-
-//    public Camera(float[] positionVector, float[] viewVector, float focalLength) {
-//        this.pos[0] = positionVector[0];             //  x                         +y
-//        this.pos[1] = positionVector[1];             //  y                          |
-//        this.pos[2] = positionVector[2];             //  z                       +z/ \+x
-//
-//        this.forward[0] = viewVector[0];
-//        this.forward[1] = viewVector[1];
-//        this.forward[2] = viewVector[2];
-//
-//        this.focalLength = focalLength;
-//    }
 
     //get
     public float[] getPos() {

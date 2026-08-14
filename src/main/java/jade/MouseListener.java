@@ -6,7 +6,7 @@ public class MouseListener {
     private static MouseListener instance;
     private double scrollX,scrollY;
     private double xPos,yPos,lastX,lastY;
-    private boolean mouseButtonPressed[] = new boolean[GLFW_MOUSE_BUTTON_LAST+1];
+    private boolean[] mouseButtonPressed = new boolean[GLFW_MOUSE_BUTTON_LAST+1];
     private boolean isDragging;
 
     private MouseListener() {

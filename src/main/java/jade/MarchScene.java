@@ -2,7 +2,6 @@ package jade;
 
 import org.lwjgl.BufferUtils;
 
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -10,15 +9,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static java.lang.Math.round;
-import static java.lang.Math.sin;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class MarchScene extends Scene{
 
-    private String vertexShaderSrc = "#version 330 core\n" +
+    private final String vertexShaderSrc = "#version 330 core\n" +
             "layout (location=0) in vec3 aPos;\n" +
             "layout (location=1) in vec4 aColor;\n" +
             "\n" +
@@ -29,7 +26,7 @@ public class MarchScene extends Scene{
             "    fColor = aColor;\n" +
             "    gl_Position = vec4(aPos, 1.0);\n" +
             "}";
-    private String fragmentShaderSrc;
+    private final String fragmentShaderSrc;
 
     {
         try {
@@ -41,7 +38,7 @@ public class MarchScene extends Scene{
 
     private int vertexID, fragmentID, shaderProgram;
 
-    private float[] vertexArray = {
+    private final float[] vertexArray = {
         //positions                         color
         1.0f, -1.0f,  0.0f,           1.0f, 0.0f, 0.0f, 0.0f, //bottom right            1        2
        -1.0f,  1.0f,  0.0f,           0.0f, 1.0f, 0.0f, 0.0f, //top left
@@ -49,7 +46,7 @@ public class MarchScene extends Scene{
        -1.0f, -1.0f,  0.0f,           0.0f, 0.0f, 1.0f, 0.0f, //bottom left             3        0
     };
 // IMBORTANT: COUNTER CLOCKWISE!!!        which means 210210 and 013013
-    private int[] elementArray = {
+    private final int[] elementArray = {
         2,1,0, // top right tri
         0,1,3  // bottom left tri
     };
@@ -123,7 +120,7 @@ public class MarchScene extends Scene{
         glBindBuffer(GL_ARRAY_BUFFER,vboID);
         glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
 
-        //create indicies and upload
+        //create indices and upload
         IntBuffer elementBuffer = BufferUtils.createIntBuffer(elementArray.length);
         elementBuffer.put(elementArray).flip();
 

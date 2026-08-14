@@ -261,7 +261,7 @@ float densityField( in vec3 p)
 
 float densityFieldAVG(in vec3 p)
 {
-    vec3 offset = vec3(0.05,0,0);
+    vec3 offset = vec3(0.01,0,0);
     float dense = densityField(p-offset.xyy)
                  +densityField(p-offset.yxy)
                  +densityField(p-offset.yyx)
@@ -307,7 +307,7 @@ void march(in sRay ray, out sHit hit, in int maxIter, in float maxLength)
     hit.mat = 1; //if i reaches maxIter, it means the ray is orbiting outside photon sphere. return hit material as glowing.
     for(int i = 0;i<maxIter;i++){
         hit.position += ray.direction;
-        hit.density += densityFieldAVG(hit.position)*ray.stepSize;
+        hit.density += densityField(hit.position)*ray.stepSize;
         hit.totalLength += ray.stepSize;
         hit.direction = normalize(ray.direction);
         // if                           escaped           or                   hit EH                 or      enough samples
@@ -331,13 +331,10 @@ vec3 getColor(in sHit hit, in vec3 startDir, in float time)
         case 0:
             //return max(vec3(avgDensity-0.5,(avgDensity-0.5)/2,(avgDensity-0.5)/8),vec3(0,0,0));
             return vec3(avgDensity,avgDensity/2,avgDensity/8);
-            break;
         case 1:
-            return vec3(avgDensity,avgDensity/2,avgDensity/8) + noiseComplete(hit.direction, time)/(avgDensity+1);
-            break;
+            return vec3(avgDensity/2,avgDensity/4,avgDensity/16) + noiseComplete(hit.direction, time)/(avgDensity+1);
         default:
             return vec3(1,0,1);
-            break;
     }
 }
 
@@ -354,20 +351,18 @@ vec3 Raymarcher(vec2 uv)
     return getColor(hit, startDir, uTimeSeconds);
 }
 
-vec3 applyVignette(in vec3 color, in vec2 uv)
+vec3 applyVignette(in vec3 col, in vec2 uv)
 {
-    float intensity = exp(-length(uCamPos)/2);
-    vec3 max = vec3(1,1,1);
     uv -= 0.5;
     uv *= 2;
     uv.x *= (float(uResolution.x) /uResolution.y);
-    float multiplier = exp(-length(uv)*length(uv));
-    return color+max*multiplier*intensity;
+    return col*min(1,smoothstep(1,0,(length(uv)-0.8*(float(uResolution.x) /uResolution.y))*1));
 }
 
 void main()
 {
     vec2 uv = gl_FragCoord.xy / uResolution;
-
-    color = vec4(Raymarcher(uv),1.0);
+    vec3 result = Raymarcher(uv);
+    result = applyVignette(result, uv);
+    color = vec4(result,1.0);
 }
