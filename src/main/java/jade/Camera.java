@@ -14,9 +14,9 @@ public class Camera {
 
     //init
     public Camera() {
-        this.pos[0] = 5.0f;             //                           +y
+        this.pos[0] = 10.0f;             //                           +y
         this.pos[1] = -2.0f;            //                            |
-        this.pos[2] = 5.0f;             //                         +z/ \+x
+        this.pos[2] = -10.0f;             //                         +z/ \+x
 
         updateVectors();
 
@@ -71,22 +71,22 @@ public class Camera {
 
 //CONTROLS -----------------------------------------------------------------BEGIN
     public void moveIn(float dt) {
-        addVectors(this.pos,this.forward,20*dt);
+        addVectors(this.pos,this.forward,15*dt);
 
-        if(sumSquares(this.pos)<=6.25f) {
+        if(sumSquares(this.pos)<=16.0f) {
             this.normalize(this.pos);
-            this.scalar(this.pos,2.5f);
+            this.scalar(this.pos,4.0f);
         }
 
         updateVectors();
     }
 
     public void moveOut(float dt) {
-        subVectors(this.pos,this.forward,20*dt);
+        subVectors(this.pos,this.forward,15*dt);
 
-        if(sumSquares(this.pos)>=900f) {
+        if(sumSquares(this.pos)>=1600f) {
             this.normalize(this.pos);
-            this.scalar(this.pos,30f);
+            this.scalar(this.pos,40f);
         }
 
         updateVectors();
@@ -94,10 +94,10 @@ public class Camera {
 
     public void moveUp(float dt) {
         float distance = sqrt(sumSquares(this.pos));
-        addVectors(this.pos,this.up,20*dt);
+        addVectors(this.pos,this.up,15*dt);
 
         if(this.pos[0]==0f && this.pos[2]==0f) {
-            addVectors(this.pos,this.up,20*dt);
+            addVectors(this.pos,this.up,15*dt);
         }
         normalize(this.pos);
         scalar(this.pos,distance);
@@ -107,10 +107,10 @@ public class Camera {
 
     public void moveDown(float dt) {
         float distance = sqrt(sumSquares(this.pos));
-        subVectors(this.pos,this.up,20*dt);
+        subVectors(this.pos,this.up,15*dt);
 
         if(this.pos[0]==0f && this.pos[2]==0f) {
-            subVectors(this.pos,this.up,20*dt);
+            subVectors(this.pos,this.up,15*dt);
         }
         normalize(this.pos);
         scalar(this.pos,distance);
@@ -120,7 +120,7 @@ public class Camera {
 
     public void moveRight(float dt) {
         float distance = sqrt(sumSquares(this.pos));
-        addVectors(this.pos,this.right,20*dt);
+        addVectors(this.pos,this.right,15*dt);
         normalize(this.pos);
         scalar(this.pos,distance);
         updateVectors();
@@ -128,7 +128,7 @@ public class Camera {
 
     public void moveLeft(float dt) {
         float distance = sqrt(sumSquares(this.pos));
-        subVectors(this.pos,this.right,20*dt);
+        subVectors(this.pos,this.right,15*dt);
         normalize(this.pos);
         scalar(this.pos,distance);
         updateVectors();

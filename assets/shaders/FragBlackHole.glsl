@@ -14,9 +14,8 @@ uniform float uTimeSeconds;
 struct sRay {vec3 origin; vec3 direction; float stepSize;};
 //hit struct ; hit point ; hit length ; hit direction ; total density ; hit material
 struct sHit {vec3 position;float totalLength; vec3 direction; float density; int mat;};
-//                                                                  0:Photon Sphere(black)  1:background with glow
+//                                                                   0:Photon Sphere(black)  1:background with glow
 
-//material struct ; color ;
 const float PSphereRadius = 2.5f;
 const float biggerRadius = 1.4*PSphereRadius;
 const float EHRadius = PSphereRadius/4;
@@ -26,8 +25,6 @@ const float MAX_LENGTH = 64;
 const float MIN_STEP_SIZE = 0.078125;
 float MAX_STEP_SIZE = length(uCamPos)*length(uCamPos)/405;
 
-//SDF===============================================================SDF
-//by Inigo Quilez
 float sdSphere( in vec3 p, in float r )
 {
     return length(p) - r;
@@ -39,11 +36,6 @@ float rand2D(in vec2 co){
 
 float rand3D(in vec3 co){
     return fract(sin(dot(co.xyz ,vec3(12.9898,78.233,144.7272))) * 43758.5453);
-}
-
-vec2 mix2(vec2 v1, vec2 v2, vec2 a)
-{
-    return vec2(mix(v1.x,v2.x,a.x),mix(v1.y,v2.y,a.y));
 }
 
 //i forgot from where i think that one webgl ashima/webgl-noise
@@ -211,7 +203,7 @@ vec3 noiseComplete(in vec3 Dir, in float time)
     const vec3 clGalaxy1 = vec3(0.612, 0.305, 0.609);
 
     vec2 noisePos;
-    //vectors for dot products are random Basisvektoren from random Orthonormalbasen
+    //vectors for dot products are random Basisvektoren from random Orthonormalbasen, NOTE: do not touch the magic numbers!!!
     //fog
     noisePos = vec2(dot(vec3(0,0.9216353751,0.3880570000),Dir),
                     dot(vec3(0.5168869748,-0.3321976121,0.7889693287),Dir))*2;
@@ -238,7 +230,7 @@ vec3 noiseComplete(in vec3 Dir, in float time)
 
     //galaxy1
     const float wavelengthG1 = 0.5;
-    float g1val =  (CellularNoise(Dir,3.14159265359)*CellularNoise(Dir,5.436563657))*(Noise3D(-Dir,0.54321)+Noise3D(-Dir,0.254321));
+    float g1val =  (CellularNoise(Dir,3.4211472295201472125514)*CellularNoise(Dir,5.1472125514229520421147))*(Noise3D(-Dir,0.2295204211471472125514)+Noise3D(-Dir,0.4211471472125514229520));
     //g1val = g1val/2;
     g1val = exp(-5*(g1val-0.75))+1;
     g1val = 1/g1val;
@@ -249,7 +241,7 @@ vec3 noiseComplete(in vec3 Dir, in float time)
     vec3 G1 = clGalaxy1*g1val;
 
     //return G1;
-    return (fog + smallStars*smallStars + bigStars*bigStars + base + G1);
+    return (fog + smallStars*smallStars + bigStars*bigStars + base + G1 + vec3(0.04,0.022,0.014)*(Noise3D(Dir.yzx+3.141592654,0.005)-1));
 }
 
 //distance field=========================================distance field

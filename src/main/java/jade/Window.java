@@ -21,39 +21,29 @@ public class Window {
     private String title;
     private long glfwWindow;
     private Camera camera;
-    public float r,g,b,a;
-    private boolean isStarted,isFadingToWhite;
+    private boolean isAutoMove;
+    private float toggleLock;
+    private final float lockTime=0.2f; //in seconds
 
     private static Window window = null;
 
     private static Scene currentScene;
 
     private Window(){
-        this.width = 800;
-        this.height = 600;
-        this.title = "Ray Marching!!! BALLLLLLLLS";
+        this.width = 1000;
+        this.height = 800;
+        this.title = "Black Hole, Controls: [W] [A] [S] [D] [ArrowUp] [ArrowDown] [T] for Move Toggle";
         this.camera = new Camera();
-        r = 1;
-        g = 1;
-        b = 1;
-        a = 1;
-        isStarted = false;
-        isFadingToWhite = true;
+        this.isAutoMove = true;
+        this.toggleLock = 0;
     }
 
     public static void changeScene(int newScene) {
-        switch (newScene) {
-            case 0:
-                currentScene = new MarchScene();
-                currentScene.init();
-                break;
-            case 1:
-                currentScene = new BlackholeScene();
-                currentScene.init();
-                break;
-            default:
-                assert false : "who tf scene this " + newScene;
-                break;
+        if (newScene == 0) {
+            currentScene = new MarchScene();
+            currentScene.init();
+        } else {
+            assert false : "who tf scene this " + newScene;
         }
     }
 
@@ -65,7 +55,7 @@ public class Window {
     }
 
     public void run() {
-        System.out.println("MI BOMBOC LWJGL " + Version.getVersion() + "!");
+        System.out.println("running LWJGL " + Version.getVersion() + "!");
 
         init();
         loop();
@@ -129,12 +119,12 @@ public class Window {
         float beginTime = Time.getTime();
         float endTime;
         float dt = -1.0f;
+        this.toggleLock = 0;
 
         while (!glfwWindowShouldClose(glfwWindow)){
             //poll events
             glfwPollEvents();
 
-            glClearColor(r,g,b,a);
             glClear(GL_COLOR_BUFFER_BIT);
 
             if(dt>=0) {
@@ -145,10 +135,13 @@ public class Window {
                 if(KeyListener.isKeyPressed(GLFW_KEY_A)) camera.moveLeft(dt);
                 if(KeyListener.isKeyPressed(GLFW_KEY_UP)) camera.moveIn(dt);
                 if(KeyListener.isKeyPressed(GLFW_KEY_DOWN)) camera.moveOut(dt);
-                //wasd
-                //mouse? or arrows
+                if(this.toggleLock<=0 && KeyListener.isKeyPressed(GLFW_KEY_T)) {
+                    toggleAutoMove();
+                    this.toggleLock = this.lockTime;
+                }
+                if(isAutoMove) camera.moveUp((float) (0.2 * dt * sin(Time.getTime()) * sin(Time.getTime()) * signum(sin(Time.getTime()))));
+                this.toggleLock -= dt;
             }
-            camera.moveUp(dt*round(sin(Time.getTime()))/4);
 
             glfwSwapBuffers(glfwWindow);
 
@@ -159,4 +152,9 @@ public class Window {
         }
         System.out.println(sqrt(camera.sumSquares(camera.getPos())));
     }
+
+    private void toggleAutoMove() {
+        this.isAutoMove=!this.isAutoMove;
+    }
+
 }
