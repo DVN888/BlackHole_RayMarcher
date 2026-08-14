@@ -335,7 +335,6 @@ void march(in sRay ray, out sHit hit, in int maxIter, in float maxLength)
 vec3 getColor(in sHit hit, in vec3 startDir, in float time)
 {
     float avgDensity = hit.density*hit.totalLength;
-    hit.mat = 1;
     switch(hit.mat) {
         case 0:
             //return max(vec3(avgDensity-0.5,(avgDensity-0.5)/2,(avgDensity-0.5)/8),vec3(0,0,0));
