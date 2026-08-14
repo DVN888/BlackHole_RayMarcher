@@ -25,8 +25,8 @@ public class Window {
     private static Scene currentScene;
 
     private Window(){
-        this.width = 1000;
-        this.height = 800;
+        this.width = 800;
+        this.height = 600;
         this.title = "Black Hole, Controls: [W] [A] [S] [D] [ArrowUp] [ArrowDown] [T] for Move Toggle";
         this.camera = new Camera();
         this.isAutoMove = true;
