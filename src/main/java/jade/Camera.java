@@ -71,7 +71,7 @@ public class Camera {
 
 //CONTROLS -----------------------------------------------------------------BEGIN
     public void moveIn(float dt) {
-        addVectors(this.pos,this.forward,10*dt);
+        addVectors(this.pos,this.forward,20*dt);
 
         if(sumSquares(this.pos)<=6.25f) {
             this.normalize(this.pos);
@@ -82,7 +82,7 @@ public class Camera {
     }
 
     public void moveOut(float dt) {
-        subVectors(this.pos,this.forward,10*dt);
+        subVectors(this.pos,this.forward,20*dt);
 
         if(sumSquares(this.pos)>=900f) {
             this.normalize(this.pos);
@@ -94,10 +94,10 @@ public class Camera {
 
     public void moveUp(float dt) {
         float distance = sqrt(sumSquares(this.pos));
-        addVectors(this.pos,this.up,10*dt);
+        addVectors(this.pos,this.up,20*dt);
 
         if(this.pos[0]==0f && this.pos[2]==0f) {
-            addVectors(this.pos,this.up,10*dt);
+            addVectors(this.pos,this.up,20*dt);
         }
         normalize(this.pos);
         scalar(this.pos,distance);
@@ -107,10 +107,10 @@ public class Camera {
 
     public void moveDown(float dt) {
         float distance = sqrt(sumSquares(this.pos));
-        subVectors(this.pos,this.up,10*dt);
+        subVectors(this.pos,this.up,20*dt);
 
         if(this.pos[0]==0f && this.pos[2]==0f) {
-            subVectors(this.pos,this.up,10*dt);
+            subVectors(this.pos,this.up,20*dt);
         }
         normalize(this.pos);
         scalar(this.pos,distance);
@@ -120,7 +120,7 @@ public class Camera {
 
     public void moveRight(float dt) {
         float distance = sqrt(sumSquares(this.pos));
-        addVectors(this.pos,this.right,10*dt);
+        addVectors(this.pos,this.right,20*dt);
         normalize(this.pos);
         scalar(this.pos,distance);
         updateVectors();
@@ -128,7 +128,7 @@ public class Camera {
 
     public void moveLeft(float dt) {
         float distance = sqrt(sumSquares(this.pos));
-        subVectors(this.pos,this.right,10*dt);
+        subVectors(this.pos,this.right,20*dt);
         normalize(this.pos);
         scalar(this.pos,distance);
         updateVectors();

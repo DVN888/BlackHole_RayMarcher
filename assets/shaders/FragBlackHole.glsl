@@ -144,14 +144,71 @@ float Noise3D(in vec3 coord, in float wavelength)
     return interpolatedNoise3D(coord.x/wavelength, coord.y/wavelength, coord.z/wavelength);
 }
 // science and fiction end
+// from https://thebookofshaders.com/12/
+vec3 random3( vec3 p ) {
+    return fract(sin(vec3(dot(p,vec3(127.1,311.7,432.9473)),dot(p,vec3(269.5,183.3,67.987)),dot(p,vec3(214.256,658.245,324.678))))*43758.5453);
+}
+
+float CellularNoise(vec3 seed, float frequency) {
+    vec3 st = seed;
+    float color = 0;
+
+    // Scale
+    st *= frequency;
+
+    // Tile the space
+    vec3 i_st = floor(st);
+    vec3 f_st = fract(st);
+
+    float m_dist = 1.;  // minimum distance
+
+    for (int y= -1; y <= 1; y++) {
+        for (int x= -1; x <= 1; x++) {
+            for (int z= -1; z <= 1; z++) {
+                // Neighbor place in the grid
+                vec3 neighbor = vec3(float(x), float(y), float(z));
+
+                // Random position from current + neighbor place in the grid
+                vec3 point = random3(i_st + neighbor);
+
+                // Animate the point
+                //point = 0.5 + 0.5*sin(u_time + 6.2831*point);
+
+                // Vector between the pixel and the point
+                vec3 diff = neighbor + point - f_st;
+
+                // Distance to the point
+                float dist = length(diff);
+
+                // Keep the closer distance
+                m_dist = min(m_dist, dist);
+            }
+        }
+    }
+
+    // Draw the min distance (distance field)
+    color += m_dist;
+
+    // Draw cell center
+    //color += 1.-step(.02, m_dist);
+
+    // Draw grid
+    //color.r += step(.98, f_st.x) + step(.98, f_st.y);
+
+    // Show isolines
+    // color -= step(.7,abs(sin(27.0*m_dist)))*.5;
+
+    return color;
+}
+//
 vec3 noiseComplete(in vec3 Dir, in float time)
 {
     //colors
     const vec3 clFog = vec3(0.361, 0.337, 0.278);
     const vec3 clSmallStarsOrange = vec3(1.0,0.85,0.75);
     const vec3 clBigStars = vec3(0.88,0.88,1.0);
-    const vec3 clBase = vec3(0.1,0.093,0.213);
-    const vec3 clGalaxy1 = vec3(0.282, 0.29, 0.141);
+    const vec3 clBase = vec3(0.1,0.093,0.183);
+    const vec3 clGalaxy1 = vec3(0.612, 0.305, 0.609);
 
     vec2 noisePos;
     //vectors for dot products are random Basisvektoren from random Orthonormalbasen
@@ -164,6 +221,10 @@ vec3 noiseComplete(in vec3 Dir, in float time)
     noisePos = vec2(dot(vec3(-0.6085806194,0.4260064336,-0.6694386813),Dir),
                          dot(vec3(0.0695795410,-0.8117613123,-0.5798295088),Dir))*2.123456789;
     vec3 smallStars = clSmallStarsOrange*dotNoise2D(noisePos.x,noisePos.y,0.02,5.123456789);
+    noisePos = vec2(dot(vec3(0.6085806194,-0.4260064336,0.6694386813),Dir),
+    dot(vec3(-0.0695795410,0.8117613123,0.5798295088),Dir))*1.564738219;
+    smallStars += clSmallStarsOrange*dotNoise2D(noisePos.x,noisePos.y,0.02,5.123456789);
+
     noisePos = vec2(dot(vec3(0.1944974411,0.8298557490,0.5229820084),Dir),
                     dot(vec3(0.8741572761,-0.3885143449,0.2913857587),Dir))*2.123456789;
     vec3 bigStars = clBigStars*dotNoise2D(noisePos.x,noisePos.y,0.08,1.0);
@@ -176,15 +237,18 @@ vec3 noiseComplete(in vec3 Dir, in float time)
                       + Noise3D(Dir+vec3(-1,0,1),wavelength*0.125)*0.125);
 
     //galaxy1
-    const float wavelengthG1 = 0.15;
-    float g1val = (Noise3D(Dir+vec3(-7.432,-4.874,-8.9812),wavelengthG1)*Noise3D(Dir+vec3(2.75,9.93,-9.28734),wavelengthG1))
-                      * (Noise3D(Dir+vec3(-10.1526,6.56894,10.532),wavelengthG1/3)
-                      + Noise3D(Dir+vec3(2.637,-3.67676,4.6143),wavelengthG1/9)/3
-                      + Noise3D(Dir+vec3(-6.12343,7.927364,8.6352),wavelengthG1/27)/9);
-    g1val = g1val * g1val;
+    const float wavelengthG1 = 0.5;
+    float g1val =  (CellularNoise(Dir,3.14159265359)*CellularNoise(Dir,5.436563657))*(Noise3D(-Dir,0.54321)+Noise3D(-Dir,0.254321));
+    //g1val = g1val/2;
+    g1val = exp(-5*(g1val-0.75))+1;
+    g1val = 1/g1val;
+    g1val *=(Noise3D(Dir,wavelengthG1)/2
+           + Noise3D(Dir,wavelengthG1/2)/4
+           + Noise3D(Dir,wavelengthG1/4)/8
+           + Noise3D(Dir,wavelengthG1/8)/16);
     vec3 G1 = clGalaxy1*g1val;
 
-    //return base;
+    //return G1;
     return (fog + smallStars*smallStars + bigStars*bigStars + base + G1);
 }
 
