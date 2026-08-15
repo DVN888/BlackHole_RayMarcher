@@ -1,5 +1,4 @@
-A Black Hole RayMarcher that uses GLFW for the window. 
-
+# Black Hole Simulation
 The Ray Marching happens in the fragment shader, the ray's step direction gets updated after every step to simulate gravitational lensing.
 
 Using a density field function, the accretion disk is rendered by the rays summing up density along their journey around/into the black hole.
