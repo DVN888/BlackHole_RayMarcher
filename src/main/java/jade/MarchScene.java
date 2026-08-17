@@ -26,11 +26,13 @@ public class MarchScene extends Scene{
             "    fColor = aColor;\n" +
             "    gl_Position = vec4(aPos, 1.0);\n" +
             "}";
-    private final String fragmentShaderSrc;
 
+    private final String SHADER_NAME = "ExperimentalBlackHole" + ".glsl";
+
+    private final String fragmentShaderSrc;
     {
         try {
-            fragmentShaderSrc = Files.readString(Path.of("assets","shaders", "FragBlackHole.glsl"), StandardCharsets.UTF_8);
+            fragmentShaderSrc = Files.readString(Path.of("assets","shaders", SHADER_NAME), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
