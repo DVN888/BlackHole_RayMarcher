@@ -27,7 +27,7 @@ public class MarchScene extends Scene{
             "    gl_Position = vec4(aPos, 1.0);\n" +
             "}";
 
-    private final String SHADER_NAME = "ExperimentalBlackHole" + ".glsl";
+    private final String SHADER_NAME = "FragBlackHole" + ".glsl";
 
     private final String fragmentShaderSrc;
     {

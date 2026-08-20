@@ -11,24 +11,22 @@ uniform vec3 uCamUp;
 uniform vec3 uCamRight;
 uniform float uTimeSeconds;
 //ray struct ; ray origin ; ray direction ; step size
-struct sRay {vec3 origin; vec3 direction; float stepSize;};
+struct sRay {vec3 origin; vec3 direction; float stepSize; vec3 velocity;};
 //hit struct ; hit point ; hit length ; hit direction ; total density ; hit material
 struct sHit {vec3 position;float totalLength; vec3 direction; float density; int mat;};
 //                                                                   0:Photon Sphere(black)  1:background with glow
 
-const float PSphereRadius = 2.5f;
+const float PSphereRadius = 1.5f;
 const float biggerRadius = 1.4*PSphereRadius;
-const float EHRadius = PSphereRadius/4;
-
-const int MAX_ITER = 256;
-const float MAX_LENGTH = 64;
-const float MIN_STEP_SIZE = 0.078125;
-float MAX_STEP_SIZE = length(uCamPos)*length(uCamPos)/405;
-
-float sdSphere( in vec3 p, in float r )
-{
-    return length(p) - r;
-}
+const float EHRadius = PSphereRadius/1.5;
+const float ADiskRadius = 5;        // in PSpheres
+const float MASS = 1;
+const float LIGHT_SPEED = PSphereRadius/25;        //min step size, only near black hole (aka when it actually matters) the ray has fixed light speed.
+const float MAX_RADIUS = 40;      //get from uniform later
+const int MAX_ITER = 256;       //overkill
+const float MAX_LENGTH = 64;     //? needed ?
+const float MIN_STEP_SIZE = 0.078125; // deprecated
+float MAX_STEP_SIZE = length(uCamPos)*length(uCamPos)/405; //deprecated
 
 float rand2D(in vec2 co){
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453)/2+0.5; //from 0.5 to 1.0
@@ -245,61 +243,93 @@ vec3 noiseComplete(in vec3 Dir, in float time)
 }
 
 //distance field=========================================distance field
+
+float sdSphere( in vec3 p, in float r )
+{
+    return length(p) - r;
+}
+
 //pure distance field, no hit info
 float distanceField( in vec3 p )
 {
-    return sdSphere(p,EHRadius);
+    return sdSphere(p,PSphereRadius);
 }
 
 //density field for the accretion disk
 float densityField( in vec3 p)
 {
-    float radial = -0.8*abs(length(p.xyz)-biggerRadius);
-    float vertical = -12*abs(p.y);
-    return exp(radial+vertical);
+    float radial = 1-smoothstep(-ADiskRadius*PSphereRadius,ADiskRadius*PSphereRadius,length(p.xyz));
+    float vertical = -3*abs(p.y)/PSphereRadius+1;
+    vertical = max(0,vertical * vertical * vertical * 8);
+    return radial*vertical;
 }
 
 float densityFieldAVG(in vec3 p)
 {
-    vec3 offset = vec3(0.01,0,0);
-    float dense = densityField(p-offset.xyy)
-                 +densityField(p-offset.yxy)
-                 +densityField(p-offset.yyx)
-                 +densityField(p-offset.xxx);
+//    vec3 offset = vec3(0.01,0,0);
+//    float dense = densityField(p-offset.xyy)
+//                 +densityField(p-offset.yxy)
+//                 +densityField(p-offset.yyx)
+//                 +densityField(p-offset.xxx);
+//    return dense/4;
+    const float randradius = PSphereRadius/100;
+    float smallTime = uTimeSeconds/10;
+    vec3 randvec = vec3(2*random3(p+cos(smallTime)).x-1,0,0)*randradius;
+    float dense = densityField(p);
+    vec3 randpos = p + randvec.xyz;
+    dense += densityField(randpos);
+    randpos = randpos + randvec.yzx;
+    dense += densityField(randpos);
+    randpos = randpos + randvec.zxy;
+    dense += densityField(randpos);
     return dense/4;
 }
 //march===========================================================march
+
+//                world space     PS space       world space
+float getStepSize(in vec3 pos, in float pivot,in float min)
+{
+    float d = length(pos);
+    if(d<PSphereRadius*pivot){
+        return exp((d/PSphereRadius-pivot)/2)+min;
+    }
+    else{
+        return (d/PSphereRadius-pivot)/2+1+min;
+    }
+}
+
+
 void initRay( in vec2 uv, out sRay ray)
 {
     ray.origin = uCamPos;
-    ray.stepSize = MIN_STEP_SIZE;
+    ray.stepSize = LIGHT_SPEED*(rand2D(uv+uTimeSeconds/10)/4+0.875);
     ray.direction = uCamDir-uCamUp-uResolution.x/uResolution.y*uCamRight;
     ray.direction += 2*uv.y*uCamUp+2*uv.x*uResolution.x/uResolution.y*uCamRight;
     ray.direction = ray.stepSize * normalize(ray.direction);
+    ray.velocity = ray.stepSize * normalize(ray.direction);
 }
 
-float getGravityConstant( in float stepSize)
+vec3 getGravityAcceleration( in float currentLightSpeed, in vec3 position)
 {
-    float sqrRadius = PSphereRadius*PSphereRadius;
-    return sqrRadius * (sqrt(stepSize*stepSize+sqrRadius)-PSphereRadius);
+    return -PSphereRadius*currentLightSpeed*currentLightSpeed/dot(position, position)*normalize(position);
 }
 
 void updateRay(in vec3 pos, inout sRay ray)
 {
-    ray.stepSize = MAX_STEP_SIZE*smoothstep(biggerRadius,length(ray.origin),length(pos))+MIN_STEP_SIZE;
-    ray.stepSize *= rand2D(pos.zx);
-    float G = getGravityConstant(ray.stepSize);
-    vec3 force = -G*pos;
-    force /= dot(pos,pos)*length(pos);
+    // at a distance of 4 Photon Sphere, quickly get to regular LIGHT_SPEED
+    ray.stepSize = getStepSize(pos,ADiskRadius*2,LIGHT_SPEED);
+    ray.stepSize *= rand3D(pos-uTimeSeconds/10)/4+0.875;                     //randomize steps from 0.875 to 1.125
+
+    vec3 acc = getGravityAcceleration(LIGHT_SPEED,pos);                     //new classic bending, its EXACT!!!
     ray.direction = ray.stepSize * normalize(ray.direction);
-    ray.direction += force;
+    ray.direction += acc;
     ray.direction = ray.stepSize * normalize(ray.direction);
 }
 
 void march(in sRay ray, out sHit hit, in int maxIter, in float maxLength)
 {
     const float epsilon = 1E-2;
-    float squaredOrigin = dot(ray.origin,ray.origin);
+    float squaredMax = MAX_RADIUS*MAX_RADIUS;
     hit.position = ray.origin;
     //also need hit direction for background
     hit.direction = ray.direction;
@@ -312,8 +342,7 @@ void march(in sRay ray, out sHit hit, in int maxIter, in float maxLength)
         hit.direction = normalize(ray.direction);
         // if                           escaped           or                   hit EH                 or      enough samples
         //render                background and glow                             black                       background and glow
-        if(!(dot(hit.position,hit.position)<squaredOrigin+1)||!(distanceField(hit.position)>epsilon)||!(hit.totalLength<maxLength)) {
-            hit.mat = 1; //say its background time
+        if(!(dot(hit.position,hit.position)<squaredMax)||!(distanceField(hit.position)>epsilon)||!(hit.totalLength<maxLength)) {
             break;
         }
 
@@ -321,18 +350,19 @@ void march(in sRay ray, out sHit hit, in int maxIter, in float maxLength)
     }
     if(!(distanceField(hit.position)>0.1)){
         hit.mat = 0;       //if it actually EH/inside Photon Sphere
+    } else {
+        hit.mat = 1;
     }
 }
 
 vec3 getColor(in sHit hit, in vec3 startDir, in float time)
 {
-    float avgDensity = hit.density*hit.totalLength;
+    float val = sqrt(1-1/(hit.density+1));
     switch(hit.mat) {
         case 0:
-            //return max(vec3(avgDensity-0.5,(avgDensity-0.5)/2,(avgDensity-0.5)/8),vec3(0,0,0));
-            return vec3(avgDensity,avgDensity/2,avgDensity/8);
+            return vec3(3,2,1)*val;
         case 1:
-            return vec3(avgDensity/2,avgDensity/4,avgDensity/16) + noiseComplete(hit.direction, time)/(avgDensity+1);
+            return vec3(3,2,1)*val+ noiseComplete(hit.direction, time)*max(1-val,0);
         default:
             return vec3(1,0,1);
     }

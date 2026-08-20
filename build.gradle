@@ -1,5 +1,11 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'com.gradleup.shadow' version '9.0.0'
+}
+
+application {
+    mainClass = 'Main'
 }
 
 group = 'IDONTKNOW'
@@ -45,4 +51,29 @@ dependencies {
     implementation "org.lwjgl:lwjgl-opengl::$lwjglNatives"
     implementation "org.lwjgl:lwjgl-stb::$lwjglNatives"
     implementation "org.joml:joml:${jomlVersion}"
+}
+
+//     .\gradlew packageWindows
+//     .\gradlew clean packageWindows
+tasks.register('packageWindows', Exec) {
+    dependsOn tasks.shadowJar
+
+    def outputDir = layout.buildDirectory.dir('jpackage').get().asFile
+    def appDir = new File(outputDir, 'RayMarchBlackHole')
+    def jarFile = tasks.shadowJar.archiveFile.get().asFile
+
+    doFirst {
+        delete appDir
+        outputDir.mkdirs()
+
+        commandLine(
+                'jpackage',
+                '--input', jarFile.parent,
+                '--main-jar', jarFile.name,
+                '--main-class', application.mainClass.get(),
+                '--name', 'RayMarchBlackHole',
+                '--type', 'app-image',
+                '--dest', outputDir.absolutePath
+        )
+    }
 }
