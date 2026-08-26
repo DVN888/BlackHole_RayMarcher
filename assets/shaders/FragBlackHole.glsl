@@ -19,7 +19,7 @@ struct sHit {vec3 position;float totalLength; vec3 direction; float density; int
 const int MAX_ITER = 200;
 const float PSphereRadius = 1.5f;     //default 1.5, main scaling value
 const float EHRadius = PSphereRadius/1.5;
-const float ADiskRadius = 5.0;        // in PSpheres, default 5.0
+const float ADiskRadius = 10.0;        // in PSpheres, default 5.0
 const float LIGHT_SPEED = 2.0*ADiskRadius*PSphereRadius/MAX_ITER;        //min step size, only near black hole (aka when it actually matters) the ray has fixed light speed.
 const float MAX_RADIUS = 40;      //get from uniform later
 float MAX_LENGTH = max(2*ADiskRadius*PSphereRadius,2.0*length(uCamPos));
@@ -296,7 +296,7 @@ float densityField( in vec3 p)
     float len = length(p.xyz);
     if(!(len>(ADiskRadius+1)*PSphereRadius)) {
         float radial = 1-smoothstep(0, (ADiskRadius+1)*PSphereRadius, len);
-        float vertical = -8*abs(p.y)/PSphereRadius+1;
+        float vertical = -8*abs(dot(p,normalize(vec3(1,5,1))))/PSphereRadius+1;
         vertical = max(0, vertical * vertical * vertical * 16);
         return radial*vertical*PerlinNoiseSumADisk(p);
     } else return 0;
