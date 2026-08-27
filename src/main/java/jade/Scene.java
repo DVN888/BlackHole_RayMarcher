@@ -10,5 +10,5 @@ public abstract class Scene {
 
     }
 
-    public abstract void update(float width,float height,Camera camera,float dt);
+    public abstract void update(int width, int height, Camera camera, float dt);
 }

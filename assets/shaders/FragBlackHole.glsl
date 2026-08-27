@@ -19,7 +19,7 @@ struct sHit {vec3 position;float totalLength; vec3 direction; float density; int
 const int MAX_ITER = 200;
 const float PSphereRadius = 1.5f;     //default 1.5, main scaling value
 const float EHRadius = PSphereRadius/1.5;
-const float ADiskRadius = 10.0;        // in PSpheres, default 5.0
+const float ADiskRadius = 6.0;        // in PSpheres, default 5.0
 const float LIGHT_SPEED = 2.0*ADiskRadius*PSphereRadius/MAX_ITER;        //min step size, only near black hole (aka when it actually matters) the ray has fixed light speed.
 const float MAX_RADIUS = 40;      //get from uniform later
 float MAX_LENGTH = max(2*ADiskRadius*PSphereRadius,2.0*length(uCamPos));
@@ -274,7 +274,7 @@ float PerlinNoiseSumADisk(vec3 p)
     return Noise2D(rotate(p.xz,uTimeSeconds/12+5*quotient),PSphereRadius/1.25)
           +Noise2D(rotate(p.xz,uTimeSeconds/8+4*quotient),PSphereRadius/2.5)/2
           +Noise2D(rotate(p.xz,uTimeSeconds/4+3*quotient),PSphereRadius/5)/2;
-          //+Noise3D(rotate(p,uTimeSeconds+1*quotient),PSphereRadius/16)/8;
+          //+Noise2D(rotate(p.xz,uTimeSeconds/3+10*quotient),PSphereRadius/3.5)/8;
 }
 
 //distance field=========================================distance field
@@ -295,8 +295,9 @@ float densityField( in vec3 p)
 {
     float len = length(p.xyz);
     if(!(len>(ADiskRadius+1)*PSphereRadius)) {
+        const vec3 upvector = normalize(vec3(1,8,1));
         float radial = 1-smoothstep(0, (ADiskRadius+1)*PSphereRadius, len);
-        float vertical = -8*abs(dot(p,normalize(vec3(1,5,1))))/PSphereRadius+1;
+        float vertical = -8*abs(dot(p,upvector))/PSphereRadius+1;
         vertical = max(0, vertical * vertical * vertical * 16);
         return radial*vertical*PerlinNoiseSumADisk(p);
     } else return 0;
@@ -355,7 +356,7 @@ void updateRay(in vec3 pos, inout sRay ray)
 {
     // at a distance of 4 Photon Sphere, quickly get to regular LIGHT_SPEED
     ray.stepSize = getStepSize(pos,LIGHT_SPEED);
-    ray.stepSize *= rand2D(gl_FragCoord.xy+vec2(uTimeSeconds/17,-uTimeSeconds/29))+0.5;                     //randomize steps from 0.875 to 1.125
+    ray.stepSize *= rand2D(gl_FragCoord.xy+vec2(uTimeSeconds/170,-uTimeSeconds/290))/2+0.5;                     //randomize steps from 0.875 to 1.125
 
     vec3 acc = getGravityAcceleration(ray.stepSize,pos);                     //new classic bending, its EXACT!!!
     ray.direction = ray.stepSize * normalize(ray.direction);
@@ -400,9 +401,10 @@ vec3 interpolationColor(float val)
     //float value = sqrt(val);
     //float value = 5-25/(val+5);
     //float value = smoothstep(0,6,val);
-    float value = sqrt(1-1/(val/5+1))+val/10;
+    float value = sqrt(1-1/(val/10+1))+val/20;
     //float value = val/8;
-    return vec3(value,value/2,value/4);
+    vec3 col = vec3(1.00,0.40,0.25);
+    return value * col;
 }
 
 vec3 getColor(in sHit hit, in vec3 startDir, in float time)

@@ -12,7 +12,7 @@ public class Camera {
     //init
     public Camera() {
         this.pos[0] = 10.0f;             //                           +y
-        this.pos[1] = -2.0f;             //                            |
+        this.pos[1] = 0.0f;             //                            |
         this.pos[2] = -10.0f;            //                         +z/ \+x
 
         updateVectors();

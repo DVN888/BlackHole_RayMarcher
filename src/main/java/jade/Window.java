@@ -18,11 +18,11 @@ public class Window {
     private Camera camera;
     private boolean isAutoMove;
     private float toggleLock;
-    private final float lockTime=0.2f; //in seconds
+    private final float lockTime=0.3f; //in seconds
 
     private static Window window = null;
 
-    private static Scene currentScene;
+    private static MarchScene currentScene;
 
     private Window(){
         this.width = 800;
@@ -103,7 +103,7 @@ public class Window {
         glfwSetWindowPos(glfwWindow,75,120);
         // window visible
         glfwShowWindow(glfwWindow);
-
+        
         //very important thing lol
         GL.createCapabilities();
 
@@ -123,7 +123,9 @@ public class Window {
             glClear(GL_COLOR_BUFFER_BIT);
 
             if(dt>=0) {
-                currentScene.update(this.width,this.height,camera,dt); //pass in window width and height, and camera
+                currentScene.update(this.width,this.height,camera,beginTime);
+
+                if(KeyListener.isKeyPressed(GLFW_KEY_C)) glfwSetWindowShouldClose(glfwWindow, true);
                 if(KeyListener.isKeyPressed(GLFW_KEY_W)) camera.moveUp(dt);
                 if(KeyListener.isKeyPressed(GLFW_KEY_S)) camera.moveDown(dt);
                 if(KeyListener.isKeyPressed(GLFW_KEY_D)) camera.moveRight(dt);
@@ -134,7 +136,7 @@ public class Window {
                     toggleAutoMove();
                     this.toggleLock = this.lockTime;
                 }
-                if(isAutoMove) camera.moveUp((float) (0.2 * dt * sin(Time.getTime()) * sin(Time.getTime()) * signum(sin(Time.getTime()))));
+                if(isAutoMove) camera.moveUp((float) (0.2 * dt * sin(beginTime) * sin(beginTime) * signum(sin(beginTime))));
                 this.toggleLock -= dt;
             }
 
@@ -145,7 +147,9 @@ public class Window {
             dt = endTime - beginTime;
             beginTime = endTime;
         }
-        System.out.println(sqrt(camera.sumSquares(camera.getPos())));
+        //delete fbo and texture
+        currentScene.cleanUp();
+        //System.out.println(sqrt(camera.sumSquares(camera.getPos())));
     }
 
     private void toggleAutoMove() {
