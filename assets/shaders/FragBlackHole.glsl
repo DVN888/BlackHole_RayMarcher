@@ -16,7 +16,7 @@ struct sRay {vec3 origin; vec3 direction; float stepSize;};
 struct sHit {vec3 position;float totalLength; vec3 direction; float density; int mat;};
 //                                                                   0:Photon Sphere(black)  1:background with glow
 
-const int MAX_ITER = 200;
+const int MAX_ITER = 200; //128 to 256, default 200
 const float PSphereRadius = 1.5f;     //default 1.5, main scaling value
 const float EHRadius = PSphereRadius/1.5;
 const float ADiskRadius = 6.0;        // in PSpheres, default 5.0
@@ -226,12 +226,12 @@ vec3 noiseComplete(in vec3 Dir, in float time)
     //fog
     noisePos = vec2(dot(vec3(0,0.9216353751,0.3880570000),Dir),
                     dot(vec3(0.5168869748,-0.3321976121,0.7889693287),Dir))*2;
-    float fogval = snoise(noisePos);
+    float fogval = snoise(noisePos/2);
     vec3 fog = fogval*fogval*fogval*clFog;
     //stars
     noisePos = vec2(dot(vec3(-0.6085806194,0.4260064336,-0.6694386813),Dir),
                          dot(vec3(0.0695795410,-0.8117613123,-0.5798295088),Dir))*2.123456789;
-    vec3 smallStars = clSmallStarsOrange*dotNoise2D(noisePos.x,noisePos.y,0.02,5.123456789);
+    vec3 smallStars = clSmallStarsOrange*dotNoise2D(noisePos.x,noisePos.y,0.03,5.123456789);
     noisePos = vec2(dot(vec3(0.6085806194,-0.4260064336,0.6694386813),Dir),
     dot(vec3(-0.0695795410,0.8117613123,0.5798295088),Dir))*1.564738219;
     smallStars += clSmallStarsOrange*dotNoise2D(noisePos.x,noisePos.y,0.02,5.123456789);
@@ -260,7 +260,7 @@ vec3 noiseComplete(in vec3 Dir, in float time)
     vec3 G1 = clGalaxy1*g1val;
 
     //return G1;
-    return (fog + smallStars*smallStars + bigStars*bigStars + base + G1 + vec3(0.04,0.022,0.014)*(Noise3D(Dir.yzx+3.141592654,0.005)-1));
+    return (fog + smallStars + bigStars*bigStars + base + G1 + vec3(0.04,0.022,0.014)*(Noise3D(Dir.yzx+3.141592654,0.005)-1));
 }
 
 vec2 rotate(vec2 v,float angle)
@@ -291,15 +291,19 @@ float distanceField( in vec3 p )
 }
 
 //density field for the accretion disk
+//                                   x y z
+const vec3 yvector = normalize(vec3(0,1,   0.176776   )); //ALWAYS x=0 AND y=1
+const vec3 xvector = normalize(vec3(1,0,0));  //ALWAYS X=1 AND y=0 AND z=0
+const vec3 zvector = normalize(vec3(0,-yvector.z,yvector.y));
 float densityField( in vec3 p)
 {
     float len = length(p.xyz);
     if(!(len>(ADiskRadius+1)*PSphereRadius)) {
-        const vec3 upvector = normalize(vec3(1,8,1));
         float radial = 1-smoothstep(0, (ADiskRadius+1)*PSphereRadius, len);
-        float vertical = -8*abs(dot(p,upvector))/PSphereRadius+1;
+        float vertical = -8*abs(dot(p,yvector))/PSphereRadius+1;
         vertical = max(0, vertical * vertical * vertical * 16);
-        return radial*vertical*PerlinNoiseSumADisk(p);
+        vec3 pInDiskSpace = vec3(dot(xvector,p),dot(yvector,p),dot(zvector,p));
+        return radial*vertical*PerlinNoiseSumADisk(pInDiskSpace);
     } else return 0;
 }
 

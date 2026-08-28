@@ -9,7 +9,7 @@ application {
 }
 
 group = 'IDONTKNOW'
-version = '1.0-SNAPSHOT'
+version = '1.0'
 
 repositories {
     mavenCentral()
@@ -63,7 +63,7 @@ tasks.register('packageWindows', Exec) {
     def jarFile = tasks.shadowJar.archiveFile.get().asFile
 
     doFirst {
-        delete appDir
+        delete outputDir
         outputDir.mkdirs()
 
         commandLine(
@@ -75,5 +75,12 @@ tasks.register('packageWindows', Exec) {
                 '--type', 'app-image',
                 '--dest', outputDir.absolutePath
         )
+    }
+
+    doLast {
+        copy {
+            from 'assets'
+            into new File(appDir, 'assets')
+        }
     }
 }
