@@ -9,7 +9,9 @@ Due to the deterministic nature of computers, the Ray Marching resulted in color
 
 There's a Key Listener, so inputs with keyboard are recognized. (`[W][A][S][D]` for spherical movement, `[ArrowUp]` to zoom in, `[ArrowDown]` to zoom out, `[T]` for toggle of automatic movement) (`[C]` is a backup close button, but the intended method to terminate the program is the window's close button.)
 
-gif here
+<p align="center">
+  <img src="https://github.com/DVN888/BlackHole_RayMarcher/blob/master/README_GIF/giphyRMBH.gif?raw=true" alt="My Black Hole Simulation's GIF"/>
+</p>
 
 I wrote about technical details and future ideas in [here](otherStuff.md). Check it out if you are interested.
 
