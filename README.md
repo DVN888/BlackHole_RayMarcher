@@ -22,5 +22,5 @@ If you don't have epilepsy, also don't move the camera near the top or near the 
 I do not recommend maximizing the window if you know your GPU is on the weaker side (especially if it's integrated), the preset 800x600 size should be enough for viewing.
 
 Use at your own risk. A double click executable `.exe` file for Windows is available in the latest Release.
-> GPU this was tested with: RTX 5060 Ti 16GB
+> GPU this was tested with: RTX 5060 Ti 16GB  
 > This was made with JDK21.
