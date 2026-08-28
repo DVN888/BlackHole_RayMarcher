@@ -9,6 +9,10 @@ Due to the deterministic nature of computers, the Ray Marching resulted in color
 
 There's a Key Listener, so inputs with keyboard are recognized. (`[W][A][S][D]` for spherical movement, `[ArrowUp]` to zoom in, `[ArrowDown]` to zoom out, `[T]` for toggle of automatic movement) (`[C]` is a backup close button, but the intended method to terminate the program is the window's close button.)
 
+gif here
+
+I wrote about technical details and future ideas in [here](otherStuff.md). Check it out if you are interested.
+
 If you have epilepsy, don't move the camera near the top or near the bottom, it flickers. 
 
 If you don't have epilepsy, also don't move the camera near the top or near the bottom, it looks trash.
