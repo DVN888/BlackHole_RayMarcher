@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static java.lang.Math.ceil;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 
@@ -228,6 +227,8 @@ public class MarchScene extends Scene{
     public void update(int width, int height, Camera camera, float sTime) {
         //check width height change, new fbo if needed
         if((width != lastWidth)||(height != lastHeight)) {
+            lastWidth = width;
+            lastHeight = height;
             setNewFBO(width,height);
         }
 
