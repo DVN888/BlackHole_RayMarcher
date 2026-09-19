@@ -19,7 +19,7 @@ Due to the deterministic nature of computers, the Ray Marching resulted in color
 
 I wrote about more technical details and future ideas in [here](otherStuff.md). Check it out if you are interested.
 
-### Disclaimers
+## Disclaimers
 If you have epilepsy, don't move the camera near the top or near the bottom, it flickers.  
 If you don't have epilepsy, also don't move the camera near the top or near the bottom, it looks trash.
 
